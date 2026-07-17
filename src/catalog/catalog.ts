@@ -34,3 +34,9 @@ export async function findProductsByIds(ids: string[]): Promise<Product[]> {
   );
   return rows;
 }
+
+export function productLabel(p: Product): string {
+  console.log("building label for product", p.id);
+  const dollars = (p.priceCents / 100).toFixed(2);
+  return `${p.name} ($${dollars})`;
+}

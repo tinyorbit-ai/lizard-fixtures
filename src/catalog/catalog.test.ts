@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { configureClient, type DbClient } from "../db/client";
-import { findProductsByIds } from "./catalog";
+import { findProductsByIds, productLabel } from "./catalog";
 
 function stubClient(rows: unknown[]): DbClient {
   return {
@@ -20,5 +20,12 @@ describe("findProductsByIds", () => {
     const product = { id: "p1", name: "Widget", priceCents: 500, active: true };
     configureClient(stubClient([product]));
     expect(await findProductsByIds(["p1"])).toEqual([product]);
+  });
+});
+
+describe("productLabel", () => {
+  it("formats a product as name and dollar price", () => {
+    const product = { id: "p1", name: "Widget", priceCents: 500, active: true };
+    expect(productLabel(product)).toBe("Widget ($5.00)");
   });
 });
