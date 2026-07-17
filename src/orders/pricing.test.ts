@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyDiscount, computeSubtotal, computeTotal, type LineItem } from "./pricing";
+import { applyDiscount, computeOrderTotal, computeSubtotal, type LineItem } from "./pricing";
 
 const items: LineItem[] = [
   { productId: "p1", unitPriceCents: 1000, quantity: 2 },
@@ -16,7 +16,7 @@ describe("pricing", () => {
     expect(applyDiscount(999, 33)).toBe(669);
   });
 
-  it("computes a total from items and a discount", () => {
-    expect(computeTotal(items, 10)).toBe(2025);
+  it("computes an order total from items and a discount", () => {
+    expect(computeOrderTotal(items, 10)).toBe(2025);
   });
 });
