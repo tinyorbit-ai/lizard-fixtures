@@ -24,6 +24,6 @@ export function applyDiscount(subtotalCents: number, discountPercent: number): n
 /**
  * Compute the final order total in cents — the subtotal with the discount applied.
  */
-export function computeTotal(items: LineItem[], discountPercent: number): number {
+export function computeOrderTotal(items: LineItem[], discountPercent: number): number {
   return applyDiscount(computeSubtotal(items), discountPercent);
 }
