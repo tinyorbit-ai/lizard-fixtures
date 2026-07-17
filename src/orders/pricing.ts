@@ -14,10 +14,12 @@ export function computeSubtotal(items: LineItem[]): number {
 
 /**
  * Apply a percentage discount to a subtotal and return the result in cents,
- * rounded to the nearest cent.
+ * rounded to the nearest cent. `discountPercent` is clamped to [0, 100] so an
+ * out-of-range value can never produce a negative or inflated total.
  */
 export function applyDiscount(subtotalCents: number, discountPercent: number): number {
-  const discounted = subtotalCents * (1 - discountPercent / 100);
+  const clampedPercent = Math.min(100, Math.max(0, discountPercent));
+  const discounted = subtotalCents * (1 - clampedPercent / 100);
   return Math.round(discounted);
 }
 

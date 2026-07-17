@@ -16,6 +16,11 @@ describe("pricing", () => {
     expect(applyDiscount(999, 33)).toBe(669);
   });
 
+  it("clamps an out-of-range discount to [0, 100]", () => {
+    expect(applyDiscount(2250, 150)).toBe(0);
+    expect(applyDiscount(2250, -20)).toBe(2250);
+  });
+
   it("computes a total from items and a discount", () => {
     expect(computeTotal(items, 10)).toBe(2025);
   });
