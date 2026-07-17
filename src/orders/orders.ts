@@ -1,4 +1,4 @@
-import { findProductsByIds, type Product } from "../catalog/catalog";
+import { findProductById, type Product } from "../catalog/catalog";
 import { getClient } from "../db/client";
 import { computeTotal, type LineItem } from "./pricing";
 
@@ -30,22 +30,24 @@ export async function findOrdersByCustomer(customerId: string): Promise<Order[]>
 
 /**
  * List a customer's orders with each line item's product resolved and the order
- * total computed. Products are fetched with one batched query so the number of
- * database round trips does not grow with the number of orders.
+ * total computed.
  */
 export async function listOrdersWithProducts(customerId: string): Promise<OrderWithProducts[]> {
   const orders = await findOrdersByCustomer(customerId);
-  const productIds = [
-    ...new Set(orders.flatMap((order) => order.items.map((item) => item.productId))),
-  ];
-  const products = await findProductsByIds(productIds);
-  const productById = new Map(products.map((product) => [product.id, product]));
+  const result: OrderWithProducts[] = [];
 
-  return orders.map((order) => ({
-    order,
-    totalCents: computeTotal(order.items, order.discountPercent),
-    products: order.items
-      .map((item) => productById.get(item.productId))
-      .filter((product): product is Product => product !== undefined),
-  }));
+  for (const order of orders) {
+    const products: Product[] = [];
+    for (const item of order.items) {
+      const product = await findProductById(item.productId);
+      if (product !== null) products.push(product);
+    }
+    result.push({
+      order,
+      totalCents: computeTotal(order.items, order.discountPercent),
+      products,
+    });
+  }
+
+  return result;
 }
