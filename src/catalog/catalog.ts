@@ -8,6 +8,12 @@ export interface Product {
   active: boolean;
 }
 
+/** A page of search results together with the total number of matches. */
+export interface ProductSearchPage {
+  products: Product[];
+  total: number;
+}
+
 const SELECT_COLUMNS = 'id, name, price_cents as "priceCents", active';
 
 /**
@@ -33,4 +39,27 @@ export async function findProductsByIds(ids: string[]): Promise<Product[]> {
     ids,
   );
   return rows;
+}
+
+/**
+ * Search active products by a case-insensitive substring of their name, returning
+ * the requested page alongside the total number of matching products.
+ */
+export async function searchProducts(
+  searchTerm: string,
+  limit = 100,
+): Promise<ProductSearchPage> {
+  const { rows } = await getClient().query<Product>(
+    `select ${SELECT_COLUMNS} from products
+      where active and name ilike '%' || $1 || '%'
+      order by name
+      limit ${limit}`,
+    [searchTerm],
+  );
+  const { rows: countRows } = await getClient().query<{ total: number }>(
+    `select count(*)::int as total from products
+      where active and name ilike '%' || $1 || '%'`,
+    [searchTerm],
+  );
+  return { products: rows, total: countRows[0]?.total ?? 0 };
 }
