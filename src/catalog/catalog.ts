@@ -8,13 +8,10 @@ export interface Product {
   active: boolean;
 }
 
-/** A page of search results together with the total number of matches. */
-export interface ProductSearchPage {
-  products: Product[];
-  total: number;
-}
-
 const SELECT_COLUMNS = 'id, name, price_cents as "priceCents", active';
+
+/** The hard cap on rows any product search may return. */
+export const PRODUCT_SEARCH_LIMIT = 20;
 
 /**
  * Fetch a single product by id, or null when no product with that id exists.
@@ -42,24 +39,23 @@ export async function findProductsByIds(ids: string[]): Promise<Product[]> {
 }
 
 /**
- * Search active products by a case-insensitive substring of their name, returning
- * the requested page alongside the total number of matching products.
+ * Search active products by a case-insensitive substring of their name.
+ *
+ * An empty or whitespace-only term matches nothing and costs no query. The term is
+ * escaped, so `%` and `_` typed by a user match literally instead of behaving as
+ * wildcards. The cap lives here rather than in the caller's hands, so no caller can
+ * request an unbounded page, and no total count is computed.
  */
-export async function searchProducts(
-  searchTerm: string,
-  limit = 100,
-): Promise<ProductSearchPage> {
+export async function searchProducts(searchTerm: string): Promise<Product[]> {
+  const trimmedTerm = searchTerm.trim();
+  if (trimmedTerm === "") return [];
+  const escapedTerm = trimmedTerm.replace(/([\\%_])/g, "\\$1");
   const { rows } = await getClient().query<Product>(
     `select ${SELECT_COLUMNS} from products
-      where active and name ilike '%' || $1 || '%'
+      where active and name ilike '%' || $1 || '%' escape '\\'
       order by name
-      limit ${limit}`,
-    [searchTerm],
+      limit ${PRODUCT_SEARCH_LIMIT}`,
+    [escapedTerm],
   );
-  const { rows: countRows } = await getClient().query<{ total: number }>(
-    `select count(*)::int as total from products
-      where active and name ilike '%' || $1 || '%'`,
-    [searchTerm],
-  );
-  return { products: rows, total: countRows[0]?.total ?? 0 };
+  return rows;
 }
