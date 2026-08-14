@@ -32,7 +32,9 @@ async function findDraftById(draftId: string): Promise<Draft | null> {
 /** Refuse to touch a draft that belongs to a different customer. */
 async function assertDraftAccess(input: DraftInput): Promise<void> {
   const draft = await findDraftById(input.draftId);
-  if (!draft) return;
+  if (!draft) {
+    throw new Error("Unauthorized: draft not found");
+  }
   if (draft.customerId !== input.customerId) {
     throw new Error("Unauthorized: draft not found");
   }

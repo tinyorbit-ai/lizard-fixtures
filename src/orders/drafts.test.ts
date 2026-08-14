@@ -16,8 +16,8 @@ function stubClient(rowsByCall: unknown[][]): DbClient {
 const stored: Draft = { id: "draft-1", customerId: "cust-1", items: [] };
 
 describe("saveDraft", () => {
-  it("creates the row on a client-allocated id's first save", async () => {
-    configureClient(stubClient([[], [stored]]));
+  it("saves a draft the customer already owns", async () => {
+    configureClient(stubClient([[stored], [stored]]));
     await expect(
       saveDraft({ draftId: "draft-1", customerId: "cust-1", items: [] }),
     ).resolves.toEqual(stored);
@@ -36,6 +36,13 @@ describe("saveDraft", () => {
       saveDraft({ draftId: "draft-1", customerId: "cust-1", items: [] }),
     ).rejects.toThrow("Unauthorized");
   });
+
+  it("rejects an orphaned draft id", async () => {
+    configureClient(stubClient([[]]));
+    await expect(
+      saveDraft({ draftId: "draft-9", customerId: "cust-1", items: [] }),
+    ).rejects.toThrow("Unauthorized");
+  });
 });
 
 describe("submitDraft", () => {
@@ -44,5 +51,12 @@ describe("submitDraft", () => {
     await expect(
       submitDraft({ draftId: "draft-1", customerId: "cust-1", items: [] }),
     ).resolves.toBe("order-1");
+  });
+
+  it("rejects an orphaned draft id", async () => {
+    configureClient(stubClient([[]]));
+    await expect(
+      submitDraft({ draftId: "draft-9", customerId: "cust-1", items: [] }),
+    ).rejects.toThrow("Unauthorized");
   });
 });
