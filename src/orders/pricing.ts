@@ -9,7 +9,11 @@ export interface LineItem {
  * Sum the line items into a subtotal in cents, before any discount is applied.
  */
 export function computeSubtotal(items: LineItem[]): number {
-  return items.reduce((sum, item) => sum + item.unitPriceCents * item.quantity, 0);
+  let subtotalCents = 0;
+  for (const item of items) {
+    subtotalCents += item.unitPriceCents * item.quantity;
+  }
+  return subtotalCents;
 }
 
 /**
