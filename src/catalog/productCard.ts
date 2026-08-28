@@ -26,3 +26,9 @@ export const storefrontCard: ProductCardProps = {
 export function shouldAutoSelectProduct(props: ProductCardProps): boolean {
   return props.highlighted && props.location === ProductCardLocation.Dashboard;
 }
+
+export function renderRepeatProductPreview(): { autoSelected: boolean } {
+  return {
+    autoSelected: shouldAutoSelectProduct(repeatProductPreviewCard),
+  };
+}
