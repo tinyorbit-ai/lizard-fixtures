@@ -15,4 +15,14 @@ describe("validateCheckoutDetails", () => {
       "Enter a valid email address",
     ]);
   });
+
+  it("lets a buyer with one name leave the last name blank", () => {
+    expect(validateCheckoutDetails({ ...valid, lastName: "", singleName: true })).toEqual([]);
+  });
+
+  it("still requires a last name when the buyer has not said they have one name", () => {
+    expect(validateCheckoutDetails({ ...valid, lastName: "", singleName: false })).toEqual([
+      "Last name is required",
+    ]);
+  });
 });
