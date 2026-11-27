@@ -7,6 +7,8 @@ export interface CheckoutDetails {
   firstName: string;
   lastName: string;
   email: string;
+  /** The buyer has only one name, so the last name may be left blank. */
+  singleName?: boolean;
 }
 
 /**
@@ -16,7 +18,9 @@ export interface CheckoutDetails {
 export function validateCheckoutDetails(details: CheckoutDetails): string[] {
   const errors: string[] = [];
   if (details.firstName.trim() === "") errors.push("First name is required");
-  if (details.lastName.trim() === "") errors.push("Last name is required");
+  if (details.lastName.trim() === "" && details.singleName !== true) {
+    errors.push("Last name is required");
+  }
   if (!details.email.includes("@")) errors.push("Enter a valid email address");
   return errors;
 }
